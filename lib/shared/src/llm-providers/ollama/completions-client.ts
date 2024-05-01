@@ -61,13 +61,19 @@ export function createOllamaClient(
             let insertText = ''
             let stopReason = ''
 
+            let allChunk = '';
+
             for await (const chunk of iterableBody) {
                 if (signal.aborted) {
                     stopReason = CompletionStopReason.RequestAborted
                     break
                 }
 
-                for (const chunkString of chunk.toString().split(RESPONSE_SEPARATOR).filter(Boolean)) {
+                allChunk += chunk.toString();
+            }
+
+            if (!stopReason) {
+                for (const chunkString of allChunk.toString().split(RESPONSE_SEPARATOR).filter(Boolean)) {
                     const line = JSON.parse(chunkString) as OllamaGenerateResponse
 
                     if (line.response) {
